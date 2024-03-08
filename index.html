@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="output.css">
+    <script src="moment.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,326;1,326&family=League+Spartan:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Red+Hat+Text:ital,wght@0,300..700;1,300..700&display=swap"
+        rel="stylesheet">
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/images/favicon-32x32.png">
+    <title>Frontend Mentor | Age calculator app</title>
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+        }
+
+        input:focus {
+            outline-width: 0;
+        }
+    </style>
+</head>
+
+<body class="bg-[#f0f0f0] ">
+    <main id="app" class="flex items-center h-screen md:my-0 md:justify-center ">
+        <div class="pb-16 md:pr-40 bg-white mx-auto rounded-3xl rounded-br-[10rem]">
+            <div class="flex gap-4 md:gap-0 md:ml-0 px-12 mt-12">
+                <div class=" md:mr-7">
+                    <p :class="[!kosong && birthDay <= 31 ? 'text-[#716f6f]' : 'text-red-500']"
+                        class="text-sm  font-bold tracking-widest py-2">DAY</p>
+                    <input @input="reset"
+                        v-model="birthDay":class="[!kosong && birthDay <= 31 ? 'border-[#dbdbdb]' : 'border-red-500']"
+                        class="border px-5 py-4 text-3xl font-bold rounded-md w-32 md:w-36" type="text"
+                        placeholder="DD">
+                    <p v-if="kosong" class="italic text-xs text-red-500 mt-2">This field is required</p>
+                    <p v-if="birthDay > 31" class="italic text-xs text-red-500 mt-2">Must be a valid day</p>
+
+                </div>
+                <div class=" md:mr-7">
+                    <p :class="[!kosong && birthMonth <= 12 ? 'text-[#716f6f]' : 'text-red-500']"
+                        class="text-sm font-bold tracking-widest py-2">MONTH</p>
+                    <input @input="reset" v-model="birthMonth"
+                        :class="[!kosong && birthMonth <= 12 ? 'border-[#dbdbdb]' : 'border-red-500']"
+                        class="border border-[#dbdbdb] px-5 py-4 text-3xl font-bold rounded-md w-32 md:w-36"
+                        type="text" placeholder="MM">
+                    <p v-if="kosong" class="italic text-xs text-red-500 mt-2">This field is required</p>
+                    <p v-if="birthMonth > 12" class="italic text-xs text-red-500 mt-2">Must be a valid month</p>
+
+                </div>
+                <div class="">
+                    <p :class="[!kosong && birthYear <= yearNow ? 'text-[#716f6f]' : 'text-red-500']"
+                        class="text-sm font-bold tracking-widest py-2">YEAR</p>
+                    <input @input="reset" v-model="birthYear"
+                        :class="[!kosong && birthYear <= yearNow ? 'border-[#dbdbdb]' : 'border-red-500']"
+                        class="border border-[#dbdbdb] px-5 py-4 text-3xl font-bold rounded-md w-32 md:w-36"
+                        type="text" placeholder="YYYY">
+                    <p v-if="kosong" class="italic text-xs text-red-500 mt-2">This field is required</p>
+                    <p v-if="birthYear > yearNow" class="italic text-xs text-red-500 mt-2">Must be in the past</p>
+
+                </div>
+            </div>
+            <div class="flex items-center md:w-[117%] mt-5">
+                <hr class="ms-12 w-1/2 md:w-full">
+                <button @click="submitData()" class="bg-[#854dff] p-5 rounded-full">
+                    <img class="w-7  md:w-full" src="assets/images/icon-arrow.svg" alt="">
+                </button>
+                <hr class="w-1/2 me-12 md:hidden ">
+            </div>
+            <div v-if="!result" class="flex flex-col ms-12 text-7xl md:text-8xl font-extrabold">
+                <p class="italic"><span class="tracking-widest text-[#854dff]">--</span>
+                    <span>years</span>
+                </p>
+                <p class="italic"><span class="tracking-widest text-[#854dff]">--</span>
+                    <span>months</span>
+                </p>
+                <p class="italic"><span class="tracking-widest text-[#854dff]">--</span>
+                    <span>days</span>
+                </p>
+            </div>
+            <div v-else class="flex flex-col ms-12 text-7xl md:text-8xl font-extrabold">
+                <p class="italic"><span class="tracking-widest text-[#854dff]">{{ yearResult }}</span>
+                    <span>years</span>
+                </p>
+                <p class="italic"><span class="tracking-widest text-[#854dff]">{{ monthResult }}</span>
+                    <span>months</span>
+                </p>
+                <p class="italic"><span class="tracking-widest text-[#854dff]">{{ dayResult }}</span>
+                    <span>days</span>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import {
+            createApp
+        } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+
+        createApp({
+            data() {
+                return {
+                    birthDay: '',
+                    birthMonth: '',
+                    birthYear: '',
+                    yearNow: new Date().getFullYear(),
+                    dayResult: '',
+                    monthResult: '',
+                    yearResult: '',
+                    now: new Date().toLocaleDateString(),
+                    kosong: false,
+                    invalidDate: false,
+                    result: false,
+                };
+            },
+            computed: {
+                currentDate() {
+                    return moment();
+                },
+                inputDate() {
+                    return moment(`${this.birthYear}-${this.birthMonth}-${this.birthDay}`, 'YYYY-MM-DD');
+                },
+
+            },
+            methods: {
+                submitData() {
+                    console.log(this.yearNow);
+                    if (this.birthDay === '' || this.birthMonth === '' || this.birthYear === '') {
+                        this.kosong = true;
+                        this.invalidDate = false;
+                    } else if (!this.inputDate.isValid() || this.inputDate.isAfter(this.currentDate)) {
+                        this.invalidDate = true;
+                        this.kosong = false;
+                    } else {
+                        this.kosong = false;
+                        this.invalidDate = false;
+                        this.result = !this.result
+                        const duration = moment.duration(this.currentDate.diff(this.inputDate));
+                        this.yearResult = duration.years();
+                        this.monthResult = duration.months();
+                        this.dayResult = duration.days();
+                        this.birthYear = '';
+                        this.birthMonth = '';
+                        this.birthDay = '';
+
+
+                    }
+                },
+                reset() {
+                    const regex = /^[0-9]*$/;
+                    if (!regex.test(event.target.value)) {
+                        this.birthDay = event.target.value.slice(0, -1);
+                        this.birthMonth = event.target.value.slice(0, -1);
+                        this.birthYear = event.target.value.slice(0, -1);
+                    }
+                    this.result = false;
+                }
+            }
+        }).mount('#app');
+    </script>
+
+    <!-- <script type="module">
+        import {
+            createApp,
+            ref,
+            watch
+        } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+
+        createApp({
+            setup() {
+                const birthDay = ref('');
+                const birthMonth = ref('');
+                const birthYear = ref('');
+                const result = ref(false);
+                const kosong = ref(false);
+                const invalidDate = ref(false);
+                const currentDate = new Date().toLocaleDateString();
+                const inputDate = ref(null);
+                const yearResult = ref('');
+                const monthResult = ref('');
+                const dayResult = ref('');
+
+                watch([birthDay, birthMonth, birthYear], () => {
+                    if (birthDay.value && birthMonth.value && birthYear.value) {
+                        inputDate.value = moment(`${birthYear.value}-${birthMonth.value}-${birthDay.value}`,
+                            'YYYY-MM-DD');
+                    }
+                });
+
+                function submitData() {
+                    if (!birthDay.value || !birthMonth.value || !birthYear.value) {
+                        kosong.value = true;
+                        invalidDate.value = false;
+                    } else if (!inputDate.value || inputDate.value.isAfter(moment())) {
+                        invalidDate.value = true;
+                        kosong.value = false;
+                    } else {
+                        kosong.value = false;
+                        invalidDate.value = false;
+                        result.value = !result.value;
+                        const duration = moment.duration(moment().diff(inputDate.value));
+                        yearResult.value = duration.years();
+                        monthResult.value = duration.months();
+                        dayResult.value = duration.days();
+                        birthDay.value = '';
+                        birthMonth.value = '';
+                        birthYear.value = '';
+                    }
+                }
+
+                function reset() {
+                    result.value = false;
+                }
+
+                return {
+                    birthDay,
+                    birthMonth,
+                    birthYear,
+                    result,
+                    kosong,
+                    invalidDate,
+                    currentDate,
+                    inputDate,
+                    yearResult,
+                    monthResult,
+                    dayResult,
+                    submitData,
+                    reset
+                };
+            }
+        }).mount('#app');
+    </script> -->
+
+</body>
+
+</html>
